@@ -88,7 +88,7 @@ class FilmListView extends GetView<FilmController> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${film.kategori} • ${film.skorRating / 10}',
+                              '${film.kategori} • ${film.rating.toStringAsFixed(1)}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,

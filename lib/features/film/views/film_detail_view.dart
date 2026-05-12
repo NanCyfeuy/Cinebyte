@@ -76,7 +76,7 @@ class FilmDetailView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${film.skorRating / 10}',
+                          film.rating.toStringAsFixed(1),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
