@@ -39,6 +39,30 @@ class Film {
     );
   }
 
+  Film copyWith({
+    String? id,
+    String? judul,
+    String? ringkasan,
+    String? gambarPoster,
+    String? gambarSampul,
+    String? kategori,
+    String? urlTrailer,
+    String? tanggalRilis,
+    String? skorRating,
+  }) {
+    return Film(
+      id: id ?? this.id,
+      judul: judul ?? this.judul,
+      ringkasan: ringkasan ?? this.ringkasan,
+      gambarPoster: gambarPoster ?? this.gambarPoster,
+      gambarSampul: gambarSampul ?? this.gambarSampul,
+      kategori: kategori ?? this.kategori,
+      urlTrailer: urlTrailer ?? this.urlTrailer,
+      tanggalRilis: tanggalRilis ?? this.tanggalRilis,
+      skorRating: skorRating ?? this.skorRating,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'judul': judul,
@@ -51,4 +75,5 @@ class Film {
       'url_trailer': urlTrailer,
     };
   }
+
 }

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'features/film/bindings/film_binding.dart';
-import 'features/film/views/film_list_view.dart'; // nanti kita buat
+import 'features/film/controllers/crud_controller.dart';
+import 'features/film/views/film_list_view.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
+  Get.lazyPut<CrudController>(() => CrudController());
   runApp(const MyApp());
 }
 
