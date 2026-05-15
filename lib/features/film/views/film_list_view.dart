@@ -4,7 +4,8 @@ import '../controllers/film_controller.dart';
 import '../controllers/crud_controller.dart';
 import '../../../data/models/film_model.dart';
 import 'film_detail_view.dart';
-import 'film_form_view.dart';
+import 'add_film_view.dart';
+
 
 class FilmListView extends GetView<FilmController> {
   const FilmListView({super.key});
@@ -59,7 +60,7 @@ class FilmListView extends GetView<FilmController> {
                                 selected: isSelected,
                                 onSelected: (_) =>
                                     crud.selectedKategori.value = k,
-                                selectedColor: Colors.blue,
+                                selectedColor: const Color(0xFFE50914),
                                 backgroundColor: Colors.grey[800],
                               ),
                             );
@@ -152,8 +153,8 @@ class FilmListView extends GetView<FilmController> {
         }),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => const FilmFormView()),
-        backgroundColor: Colors.blue,
+        onPressed: () => Get.to(() => const AddFilmView()),
+        backgroundColor: const Color(0xFFE50914),
         child: const Icon(Icons.add),
       ),
     );
