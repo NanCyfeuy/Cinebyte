@@ -14,34 +14,57 @@ class _AddFilmViewState extends State<AddFilmView> {
   final FilmController controller = Get.find<FilmController>();
   final _formKey = GlobalKey<FormState>();
 
-  final _judulC       = TextEditingController();
-  final _ringkasanC   = TextEditingController();
-  final _posterC      = TextEditingController();
-  final _sampulC      = TextEditingController();
-  final _trailerC     = TextEditingController();
-  final _skorC        = TextEditingController();
-  final _tahunC       = TextEditingController();
+  final _judulC = TextEditingController();
+  final _ringkasanC = TextEditingController();
+  final _posterC = TextEditingController();
+  final _sampulC = TextEditingController();
+  final _trailerC = TextEditingController();
+  final _skorC = TextEditingController();
+  final _tahunC = TextEditingController();
 
-  String _selectedKategori = 'Action';
   bool _isLoading = false;
 
   static const List<String> _kategoriList = [
-    'Action', 'Drama', 'Comedy', 'Horror',
-    'Romance', 'Thriller', 'Sci-Fi', 'Animation', 'Documentary',
+    'Action',
+    'Drama',
+    'Comedy',
+    'Horror',
+    'Romance',
+    'Thriller',
+    'Sci-Fi',
+    'Animation',
+    'Documentary',
   ];
+
+  final Set<String> _selectedKategori = {};
 
   @override
   void dispose() {
-    _judulC.dispose(); _ringkasanC.dispose(); _posterC.dispose();
-    _sampulC.dispose(); _trailerC.dispose(); _skorC.dispose(); _tahunC.dispose();
+    _judulC.dispose();
+    _ringkasanC.dispose();
+    _posterC.dispose();
+    _sampulC.dispose();
+    _trailerC.dispose();
+    _skorC.dispose();
+    _tahunC.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedKategori.isEmpty) {
+      Get.snackbar(
+        'Perhatian',
+        'Pilih minimal 1 genre',
+        snackPosition: SnackPosition.TOP,
+        colorText: Colors.white,
+        backgroundColor: const Color(0xFF1E1E2A),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // Konversi tahun → Unix timestamp (1 Jan tahun tersebut)
     final tahun = int.tryParse(_tahunC.text.trim()) ?? 2024;
     final timestamp = DateTime(tahun).millisecondsSinceEpoch ~/ 1000;
 
@@ -51,7 +74,7 @@ class _AddFilmViewState extends State<AddFilmView> {
       ringkasan: _ringkasanC.text.trim(),
       gambarPoster: _posterC.text.trim(),
       gambarSampul: _sampulC.text.trim(),
-      kategori: _selectedKategori,
+      kategori: _selectedKategori.join(', '),
       urlTrailer: _trailerC.text.trim(),
       tanggalRilis: timestamp.toString(),
       skorRating: _skorC.text.trim(),
@@ -62,122 +85,180 @@ class _AddFilmViewState extends State<AddFilmView> {
       'Sukses',
       'Film berhasil ditambahkan',
       snackPosition: SnackPosition.TOP,
-      // backgroundColor: Colors.black87,
       colorText: Colors.white,
     );
     Get.back();
-    setState(() => _isLoading = false); 
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: const Color(0xFF0A0A0F),
       appBar: AppBar(
-        backgroundColor: Colors.black87,
+        backgroundColor: const Color(0xFF0A0A0F),
         elevation: 0,
-        title: const Text('Tambah Film',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Get.back(),
+        leading: GestureDetector(
+          onTap: () => Get.back(),
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.07),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 0.5,
+              ),
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 16,
+            ),
+          ),
+        ),
+        title: const Text(
+          'Tambah Film',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
+          ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle('Informasi Film'),
-              const SizedBox(height: 16),
-              _field(label: 'Judul Film', hint: 'Contoh: Avengers Endgame',
-                  c: _judulC, icon: Icons.movie_outlined,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Judul tidak boleh kosong';
-                    if (v.trim().length < 2) return 'Minimal 2 karakter';
-                    return null;
-                  }),
-              const SizedBox(height: 16),
-              _field(label: 'Ringkasan / Sinopsis',
-                  hint: 'Ceritakan alur singkat film ini...',
-                  c: _ringkasanC, icon: Icons.description_outlined, maxLines: 4,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Ringkasan tidak boleh kosong';
-                    if (v.trim().length < 10) return 'Minimal 10 karakter';
-                    return null;
-                  }),
-              const SizedBox(height: 16),
-              _dropdownKategori(),
-              const SizedBox(height: 16),
-              _field(label: 'Skor Rating (0–100)', hint: 'Contoh: 85',
-                  c: _skorC, icon: Icons.star_outline,
-                  keyboardType: TextInputType.number,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Skor tidak boleh kosong';
-                    final n = int.tryParse(v.trim());
-                    if (n == null) return 'Masukkan angka yang valid';
-                    if (n < 0 || n > 100) return 'Skor harus 0–100';
-                    return null;
-                  }),
-              const SizedBox(height: 16),
-              _field(label: 'Tahun Rilis', hint: 'Contoh: 2023',
-                  c: _tahunC, icon: Icons.calendar_today_outlined,
-                  keyboardType: TextInputType.number,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Tahun tidak boleh kosong';
-                    final n = int.tryParse(v.trim());
-                    if (n == null || n < 1900 || n > 2100) return 'Tahun tidak valid';
-                    return null;
-                  }),
+              // ── Informasi Film ───────────────────────────────────
+              _sectionLabel('Informasi Film'),
+              const SizedBox(height: 12),
+              _field(
+                label: 'Judul Film',
+                hint: 'Contoh: Avengers Endgame',
+                c: _judulC,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Judul tidak boleh kosong';
+                  if (v.trim().length < 2) return 'Minimal 2 karakter';
+                  return null;
+                },
+              ),
+              _field(
+                label: 'Ringkasan / Sinopsis',
+                hint: 'Ceritakan alur singkat film ini...',
+                c: _ringkasanC,
+                maxLines: 4,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Ringkasan tidak boleh kosong';
+                  if (v.trim().length < 10) return 'Minimal 10 karakter';
+                  return null;
+                },
+              ),
+              _field(
+                label: 'Skor Rating (0–100)',
+                hint: 'Contoh: 85',
+                c: _skorC,
+                keyboardType: TextInputType.number,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Skor tidak boleh kosong';
+                  final n = int.tryParse(v.trim());
+                  if (n == null) return 'Masukkan angka yang valid';
+                  if (n < 0 || n > 100) return 'Skor harus 0–100';
+                  return null;
+                },
+              ),
+              _field(
+                label: 'Tahun Rilis',
+                hint: 'Contoh: 2023',
+                c: _tahunC,
+                keyboardType: TextInputType.number,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty)
+                    return 'Tahun tidak boleh kosong';
+                  final n = int.tryParse(v.trim());
+                  if (n == null || n < 1900 || n > 2100)
+                    return 'Tahun tidak valid';
+                  return null;
+                },
+              ),
+
+              // ── Genre ─────────────────────────────────────────────
+              _sectionLabel('Genre'),
+              const SizedBox(height: 12),
+              _genreChecklist(),
               const SizedBox(height: 24),
-              _sectionTitle('Media & URL'),
-              const SizedBox(height: 16),
-              _field(label: 'URL Gambar Poster', hint: 'https://...',
-                  c: _posterC, icon: Icons.image_outlined,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'URL poster tidak boleh kosong';
-                    return null;
-                  }),
-              const SizedBox(height: 16),
-              _field(label: 'URL Gambar Sampul (Banner)', hint: 'https://...',
-                  c: _sampulC, icon: Icons.panorama_outlined,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'URL sampul tidak boleh kosong';
-                    return null;
-                  }),
-              const SizedBox(height: 16),
-              _field(label: 'URL Trailer', hint: 'https://youtube.com/watch?v=...',
-                  c: _trailerC, icon: Icons.play_circle_outline,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'URL trailer tidak boleh kosong';
-                    return null;
-                  }),
-              const SizedBox(height: 32),
-              // Tombol simpan
+
+              // ── Media & URL ───────────────────────────────────────
+              _sectionLabel('Media & URL'),
+              const SizedBox(height: 12),
+              _field(
+                label: 'URL Gambar Poster',
+                hint: 'https://...',
+                c: _posterC,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'URL poster tidak boleh kosong'
+                    : null,
+              ),
+              _field(
+                label: 'URL Gambar Sampul',
+                hint: 'https://...',
+                c: _sampulC,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'URL sampul tidak boleh kosong'
+                    : null,
+              ),
+              _field(
+                label: 'URL Trailer',
+                hint: 'https://youtube.com/watch?v=...',
+                c: _trailerC,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'URL trailer tidak boleh kosong'
+                    : null,
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── Submit ────────────────────────────────────────────
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submit,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE50914),
-                    disabledBackgroundColor: Colors.grey[800],
+                    backgroundColor: Colors.red.shade700,
+                    disabledBackgroundColor: Colors.white12,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 22, height: 22,
+                          width: 22,
+                          height: 22,
                           child: CircularProgressIndicator(
-                              color: Colors.white, strokeWidth: 2.5))
-                      : const Text('Tambahkan Film',
-                          style: TextStyle(color: Colors.white,
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text(
+                          'Tambahkan Film',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
-              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -185,71 +266,156 @@ class _AddFilmViewState extends State<AddFilmView> {
     );
   }
 
-  // HELPER WIDGETS 
-  Widget _sectionTitle(String t) => Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Text(t.toUpperCase(),
-          style: const TextStyle(color: Color(0xFFE50914),
-              fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.5)));
+  // ── Genre checklist ────────────────────────────────────────────────────────
+  Widget _genreChecklist() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF13131C),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.8),
+      ),
+      child: Column(
+        children: _kategoriList.map((genre) {
+          final selected = _selectedKategori.contains(genre);
+          return InkWell(
+            onTap: () => setState(() {
+              selected
+                  ? _selectedKategori.remove(genre)
+                  : _selectedKategori.add(genre);
+            }),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? Colors.red.shade700
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: selected
+                            ? Colors.red.shade700
+                            : Colors.white.withOpacity(0.2),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: selected
+                        ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 13,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    genre,
+                    style: TextStyle(
+                      color: selected
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.55),
+                      fontSize: 14,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (selected)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade700.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        'Dipilih',
+                        style: TextStyle(
+                          color: Colors.red.shade400,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  Widget _sectionLabel(String t) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
+    child: Text(
+      t.toUpperCase(),
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.35),
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+      ),
+    ),
+  );
 
   Widget _field({
-    required String label, required String hint,
-    required TextEditingController c, required IconData icon,
+    required String label,
+    required String hint,
+    required TextEditingController c,
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
-  }) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(color: Colors.white70,
-          fontSize: 13, fontWeight: FontWeight.w500)),
-      const SizedBox(height: 8),
-      TextFormField(
-        controller: c, maxLines: maxLines,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
-        validator: validator,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white30),
-          prefixIcon: Icon(icon, color: Colors.white38, size: 20),
-          filled: true, fillColor: const Color(0xFF1E1E1E),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          border: _border(), enabledBorder: _border(),
-          focusedBorder: _border(color: const Color(0xFFE50914), w: 1.5),
-          errorBorder: _border(color: Colors.orangeAccent),
-          focusedErrorBorder: _border(color: Colors.orangeAccent, w: 1.5),
-          errorStyle: const TextStyle(color: Colors.orangeAccent),
-        ),
-      ),
-    ]);
-  }
-
-  Widget _dropdownKategori() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start, children: [
-    const Text('Kategori', style: TextStyle(color: Colors.white70,
-        fontSize: 13, fontWeight: FontWeight.w500)),
-    const SizedBox(height: 8),
-    DropdownButtonFormField<String>(
-      value: _selectedKategori,
-      dropdownColor: const Color(0xFF1E1E1E),
-      style: const TextStyle(color: Colors.white),
-      icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: TextFormField(
+      controller: c,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: Colors.white, fontSize: 14),
+      cursorColor: Colors.redAccent,
+      validator: validator,
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.category_outlined, color: Colors.white38, size: 20),
-        filled: true, fillColor: const Color(0xFF1E1E1E),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: _border(), enabledBorder: _border(),
-        focusedBorder: _border(color: const Color(0xFFE50914), w: 1.5),
+        labelText: label,
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: Colors.white.withOpacity(0.22),
+          fontSize: 13,
+        ),
+        labelStyle: TextStyle(
+          color: Colors.white.withOpacity(0.4),
+          fontSize: 13,
+        ),
+        filled: true,
+        fillColor: const Color(0xFF13131C),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: _border(),
+        enabledBorder: _border(),
+        focusedBorder: _border(color: Colors.red.shade700, w: 1.2),
+        errorBorder: _border(color: Colors.redAccent),
+        focusedErrorBorder: _border(color: Colors.redAccent, w: 1.2),
+        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
       ),
-      items: _kategoriList.map((k) => DropdownMenuItem(
-          value: k, child: Text(k, style: const TextStyle(color: Colors.white)))).toList(),
-      onChanged: (val) => setState(() => _selectedKategori = val ?? 'Action'),
-      validator: (v) => v == null ? 'Pilih kategori' : null,
     ),
-  ]);
+  );
 
-  OutlineInputBorder _border({Color color = const Color(0xFF2E2E2E), double w = 1.0}) =>
+  OutlineInputBorder _border({Color? color, double w = 0.8}) =>
       OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: color, width: w));
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: color ?? Colors.white.withOpacity(0.08),
+          width: w,
+        ),
+      );
 }

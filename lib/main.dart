@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'features/film/bindings/film_binding.dart';
 import 'features/film/controllers/crud_controller.dart';
-import 'features/film/views/film_list_view.dart';
+import 'features/film/views/splash_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF0F0F0F),
       ),
       initialBinding: FilmBinding(),
-      home: const FilmListView(), // sementara kita pakai ini dulu
+      home: const SplashView(), // sementara kita pakai ini dulu
     );
   }
 }
