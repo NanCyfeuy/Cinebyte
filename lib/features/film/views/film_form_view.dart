@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/film_model.dart';
 import '../controllers/film_controller.dart';
-
+ 
 class FilmFormView extends StatefulWidget {
   final Film? film;
   const FilmFormView({super.key, this.film});
-
+ 
   @override
   State<FilmFormView> createState() => _FilmFormViewState();
 }
-
+ 
 class _FilmFormViewState extends State<FilmFormView> {
   final _formKey = GlobalKey<FormState>();
   final _controller = Get.find<FilmController>();
-
+ 
   late final TextEditingController _judul;
   late final TextEditingController _ringkasan;
   late final TextEditingController _gambarPoster;
@@ -22,9 +22,9 @@ class _FilmFormViewState extends State<FilmFormView> {
   late final TextEditingController _urlTrailer;
   late final TextEditingController _tanggalRilis;
   late final TextEditingController _skorRating;
-
+ 
   final Set<String> _selectedKategori = {};
-
+ 
   static const List<String> _kategoriOptions = [
     'Action',
     'Drama',
@@ -36,9 +36,9 @@ class _FilmFormViewState extends State<FilmFormView> {
     'Animation',
     'Documentary',
   ];
-
+ 
   bool get isEdit => widget.film != null;
-
+ 
   @override
   void initState() {
     super.initState();
@@ -50,8 +50,8 @@ class _FilmFormViewState extends State<FilmFormView> {
     _urlTrailer = TextEditingController(text: f?.urlTrailer ?? '');
     _tanggalRilis = TextEditingController(text: f?.tanggalRilis ?? '');
     _skorRating = TextEditingController(text: f?.skorRating ?? '');
-
-    // Pre-fill genre dari data existing (format "Action, Horror")
+ 
+    // Pre-fill genre dari data existing
     if (f != null && f.kategori.isNotEmpty) {
       final existing = f.kategori.split(',').map((e) => e.trim()).toSet();
       _selectedKategori.addAll(
@@ -59,7 +59,7 @@ class _FilmFormViewState extends State<FilmFormView> {
       );
     }
   }
-
+ 
   @override
   void dispose() {
     _judul.dispose();
@@ -71,7 +71,7 @@ class _FilmFormViewState extends State<FilmFormView> {
     _skorRating.dispose();
     super.dispose();
   }
-
+ 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedKategori.isEmpty) {
@@ -84,6 +84,7 @@ class _FilmFormViewState extends State<FilmFormView> {
       );
       return;
     }
+ 
     final film = Film(
       id: widget.film?.id ?? '',
       judul: _judul.text.trim(),
@@ -95,11 +96,16 @@ class _FilmFormViewState extends State<FilmFormView> {
       tanggalRilis: _tanggalRilis.text.trim(),
       skorRating: _skorRating.text.trim(),
     );
-    isEdit
-        ? _controller.updateFilm(widget.film!.id, film)
-        : _controller.addFilm(film);
+ 
+    //   addFilm()    → snackbar + Get.until(isFirst) ke Home
+    //   updateFilm() → snackbar + Get.back() + Get.off(Detail baru)
+    if (isEdit) {
+      _controller.updateFilm(widget.film!.id, film);
+    } else {
+      _controller.addFilm(film);
+    }
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,14 +174,12 @@ class _FilmFormViewState extends State<FilmFormView> {
                   return null;
                 },
               ),
-
-              // ── Genre checklist ───────────────────────────────────
+ 
               _sectionLabel('Genre'),
               const SizedBox(height: 12),
               _genreChecklist(),
               const SizedBox(height: 24),
-
-              // ── Submit ────────────────────────────────────────────
+ 
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -208,8 +212,7 @@ class _FilmFormViewState extends State<FilmFormView> {
       ),
     );
   }
-
-  // ── Genre checklist ────────────────────────────────────────────────────────
+ 
   Widget _genreChecklist() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -249,11 +252,8 @@ class _FilmFormViewState extends State<FilmFormView> {
                       ),
                     ),
                     child: selected
-                        ? const Icon(
-                            Icons.check_rounded,
-                            color: Colors.white,
-                            size: 13,
-                          )
+                        ? const Icon(Icons.check_rounded,
+                            color: Colors.white, size: 13)
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -264,16 +264,15 @@ class _FilmFormViewState extends State<FilmFormView> {
                           ? Colors.white
                           : Colors.white.withOpacity(0.55),
                       fontSize: 14,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                   const Spacer(),
                   if (selected)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.red.shade700.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(99),
@@ -295,52 +294,56 @@ class _FilmFormViewState extends State<FilmFormView> {
       ),
     );
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
+ 
   Widget _sectionLabel(String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: Text(
-      t.toUpperCase(),
-      style: TextStyle(
-        color: Colors.white.withOpacity(0.35),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.5,
-      ),
-    ),
-  );
-
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text(
+          t.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.35),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.5,
+          ),
+        ),
+      );
+ 
   InputDecoration _decor(String label, {String? hint}) => InputDecoration(
-    labelText: label,
-    hintText: hint,
-    hintStyle: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 13),
-    labelStyle: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
-    filled: true,
-    fillColor: const Color(0xFF13131C),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.red.shade700, width: 1.2),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Colors.redAccent, width: 0.8),
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Colors.redAccent, width: 1.2),
-    ),
-    errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
-  );
-
+        labelText: label,
+        hintText: hint,
+        hintStyle:
+            TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 13),
+        labelStyle:
+            TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
+        filled: true,
+        fillColor: const Color(0xFF13131C),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              BorderSide(color: Colors.white.withOpacity(0.08), width: 0.8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: Colors.red.shade700, width: 1.2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 0.8),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.2),
+        ),
+        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
+      );
+ 
   Widget _field(
     TextEditingController ctrl,
     String label, {
@@ -349,21 +352,22 @@ class _FilmFormViewState extends State<FilmFormView> {
     String? hint,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: TextFormField(
-      controller: ctrl,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
-      cursorColor: Colors.redAccent,
-      decoration: _decor(label, hint: hint),
-      validator:
-          validator ??
-          (required
-              ? (val) =>
-                    (val == null || val.trim().isEmpty) ? 'Wajib diisi' : null
-              : null),
-    ),
-  );
+  }) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: TextFormField(
+          controller: ctrl,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          cursorColor: Colors.redAccent,
+          decoration: _decor(label, hint: hint),
+          validator: validator ??
+              (required
+                  ? (val) => (val == null || val.trim().isEmpty)
+                      ? 'Wajib diisi'
+                      : null
+                  : null),
+        ),
+      );
 }

@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../data/models/film_model.dart';
 import 'package:cinebyte/features/film/controllers/film_controller.dart';
-
+ 
 class AddFilmView extends StatefulWidget {
   const AddFilmView({super.key});
-
+ 
   @override
   State<AddFilmView> createState() => _AddFilmViewState();
 }
-
+ 
 class _AddFilmViewState extends State<AddFilmView> {
   final FilmController controller = Get.find<FilmController>();
   final _formKey = GlobalKey<FormState>();
-
+ 
   final _judulC = TextEditingController();
   final _ringkasanC = TextEditingController();
   final _posterC = TextEditingController();
@@ -21,9 +21,9 @@ class _AddFilmViewState extends State<AddFilmView> {
   final _trailerC = TextEditingController();
   final _skorC = TextEditingController();
   final _tahunC = TextEditingController();
-
+ 
   bool _isLoading = false;
-
+ 
   static const List<String> _kategoriList = [
     'Action',
     'Drama',
@@ -35,9 +35,9 @@ class _AddFilmViewState extends State<AddFilmView> {
     'Animation',
     'Documentary',
   ];
-
+ 
   final Set<String> _selectedKategori = {};
-
+ 
   @override
   void dispose() {
     _judulC.dispose();
@@ -49,7 +49,7 @@ class _AddFilmViewState extends State<AddFilmView> {
     _tahunC.dispose();
     super.dispose();
   }
-
+ 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedKategori.isEmpty) {
@@ -62,12 +62,12 @@ class _AddFilmViewState extends State<AddFilmView> {
       );
       return;
     }
-
+ 
     setState(() => _isLoading = true);
-
+ 
     final tahun = int.tryParse(_tahunC.text.trim()) ?? 2024;
     final timestamp = DateTime(tahun).millisecondsSinceEpoch ~/ 1000;
-
+ 
     final film = Film(
       id: '',
       judul: _judulC.text.trim(),
@@ -79,18 +79,12 @@ class _AddFilmViewState extends State<AddFilmView> {
       tanggalRilis: timestamp.toString(),
       skorRating: _skorC.text.trim(),
     );
-
+ 
     await controller.addFilm(film);
-    Get.snackbar(
-      'Sukses',
-      'Film berhasil ditambahkan',
-      snackPosition: SnackPosition.TOP,
-      colorText: Colors.white,
-    );
-    Get.back();
-    setState(() => _isLoading = false);
+ 
+    if (mounted) setState(() => _isLoading = false);
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +129,6 @@ class _AddFilmViewState extends State<AddFilmView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Informasi Film ───────────────────────────────────
               _sectionLabel('Informasi Film'),
               const SizedBox(height: 12),
               _field(
@@ -189,14 +182,12 @@ class _AddFilmViewState extends State<AddFilmView> {
                   return null;
                 },
               ),
-
-              // ── Genre ─────────────────────────────────────────────
+ 
               _sectionLabel('Genre'),
               const SizedBox(height: 12),
               _genreChecklist(),
               const SizedBox(height: 24),
-
-              // ── Media & URL ───────────────────────────────────────
+ 
               _sectionLabel('Media & URL'),
               const SizedBox(height: 12),
               _field(
@@ -223,10 +214,9 @@ class _AddFilmViewState extends State<AddFilmView> {
                     ? 'URL trailer tidak boleh kosong'
                     : null,
               ),
-
+ 
               const SizedBox(height: 28),
-
-              // ── Submit ────────────────────────────────────────────
+ 
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -265,8 +255,7 @@ class _AddFilmViewState extends State<AddFilmView> {
       ),
     );
   }
-
-  // ── Genre checklist ────────────────────────────────────────────────────────
+ 
   Widget _genreChecklist() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -294,9 +283,7 @@ class _AddFilmViewState extends State<AddFilmView> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: selected
-                          ? Colors.red.shade700
-                          : Colors.transparent,
+                      color: selected ? Colors.red.shade700 : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
                         color: selected
@@ -306,11 +293,8 @@ class _AddFilmViewState extends State<AddFilmView> {
                       ),
                     ),
                     child: selected
-                        ? const Icon(
-                            Icons.check_rounded,
-                            color: Colors.white,
-                            size: 13,
-                          )
+                        ? const Icon(Icons.check_rounded,
+                            color: Colors.white, size: 13)
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -321,16 +305,15 @@ class _AddFilmViewState extends State<AddFilmView> {
                           ? Colors.white
                           : Colors.white.withOpacity(0.55),
                       fontSize: 14,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                   const Spacer(),
                   if (selected)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.red.shade700.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(99),
@@ -352,21 +335,20 @@ class _AddFilmViewState extends State<AddFilmView> {
       ),
     );
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
+ 
   Widget _sectionLabel(String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 4),
-    child: Text(
-      t.toUpperCase(),
-      style: TextStyle(
-        color: Colors.white.withOpacity(0.35),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.5,
-      ),
-    ),
-  );
-
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text(
+          t.toUpperCase(),
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.35),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.5,
+          ),
+        ),
+      );
+ 
   Widget _field({
     required String label,
     required String hint,
@@ -374,42 +356,41 @@ class _AddFilmViewState extends State<AddFilmView> {
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
-  }) => Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: TextFormField(
-      controller: c,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
-      cursorColor: Colors.redAccent,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: Colors.white.withOpacity(0.22),
-          fontSize: 13,
+  }) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: TextFormField(
+          controller: c,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+          cursorColor: Colors.redAccent,
+          validator: validator,
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: Colors.white.withOpacity(0.22),
+              fontSize: 13,
+            ),
+            labelStyle: TextStyle(
+              color: Colors.white.withOpacity(0.4),
+              fontSize: 13,
+            ),
+            filled: true,
+            fillColor: const Color(0xFF13131C),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: _border(),
+            enabledBorder: _border(),
+            focusedBorder: _border(color: Colors.red.shade700, w: 1.2),
+            errorBorder: _border(color: Colors.redAccent),
+            focusedErrorBorder: _border(color: Colors.redAccent, w: 1.2),
+            errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
+          ),
         ),
-        labelStyle: TextStyle(
-          color: Colors.white.withOpacity(0.4),
-          fontSize: 13,
-        ),
-        filled: true,
-        fillColor: const Color(0xFF13131C),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        border: _border(),
-        enabledBorder: _border(),
-        focusedBorder: _border(color: Colors.red.shade700, w: 1.2),
-        errorBorder: _border(color: Colors.redAccent),
-        focusedErrorBorder: _border(color: Colors.redAccent, w: 1.2),
-        errorStyle: const TextStyle(color: Colors.redAccent, fontSize: 11),
-      ),
-    ),
-  );
-
+      );
+ 
   OutlineInputBorder _border({Color? color, double w = 0.8}) =>
       OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
