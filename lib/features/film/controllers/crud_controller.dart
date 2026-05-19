@@ -32,6 +32,7 @@ class CrudController extends GetxController {
  
   @override
   void onInit() {
+    favoriteIds.value = List<String>.from(_box.read(_favKey) ?? []);
     super.onInit();
  
     // Dengarkan perubahan dari films, searchQuery, selectedKategori, minRating
@@ -72,15 +73,17 @@ class CrudController extends GetxController {
   }
  
   // ── Favorites ───────────────────────────────────────────────
-  List<String> get favoriteIds =>
-      List<String>.from(_box.read(_favKey) ?? []);
- 
-  bool isFavorite(String id) => favoriteIds.contains(id);
- 
-  void toggleFavorite(String id) {
-    final favs = favoriteIds;
-    favs.contains(id) ? favs.remove(id) : favs.add(id);
-    _box.write(_favKey, favs);
-    update();
+final favoriteIds = <String>[].obs; // ✅ Reactive
+
+bool isFavorite(String id) => favoriteIds.contains(id);
+
+void toggleFavorite(String id) {
+  if (favoriteIds.contains(id)) {
+    favoriteIds.remove(id);
+  } else {
+    favoriteIds.add(id);
+  }
+  _box.write(_favKey, favoriteIds.toList());
+  update();
   }
 }

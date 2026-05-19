@@ -109,7 +109,7 @@ class _BottomNav extends StatelessWidget {
               bottom: 0,
               child: _NavItem(
                 icon: selected == 0 ? Icons.home_rounded : Icons.home_outlined,
-                label: 'Home',
+                label: 'Beranda',
                 active: selected == 0,
                 onTap: onHome,
               ),
@@ -921,11 +921,15 @@ class _KoleksiCard extends StatelessWidget {
                               width: 1,
                             ),
                           ),
-                          child: const Icon(
-                            Icons.bookmark_rounded,
-                            color: Colors.amber,
-                            size: 17,
-                          ),
+                          child: Icon(
+                          c.isFavorite(film.id)
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          color: c.isFavorite(film.id)
+                              ? Colors.amber
+                              : Colors.white38,
+                          size: 17,
+                        ),
                         ),
                       ),
                     ),

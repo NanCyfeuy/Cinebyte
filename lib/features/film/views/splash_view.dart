@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -78,12 +77,12 @@ class _SplashViewState extends State<SplashView>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // ── Logo ──────────────────────────────────────────
+                  // ── Logo Roll Film ─────────────────────────────────
                   AnimatedBuilder(
                     animation: _pulse,
                     builder: (_, child) => Container(
-                      width: 80,
-                      height: 80,
+                      width: 90,
+                      height: 90,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: const Color(0xFF0F0F1B),
@@ -102,40 +101,12 @@ class _SplashViewState extends State<SplashView>
                       child: child,
                     ),
                     child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 46,
-                            height: 46,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.6),
-                                width: 1.6,
-                              ),
-                            ),
-                          ),
-                          ...List.generate(
-                            3,
-                            (i) => Transform.rotate(
-                              angle: i * math.pi / 3,
-                              child: Container(
-                                width: 1.6,
-                                height: 30,
-                                color: Colors.white.withOpacity(0.4),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 13,
-                            height: 13,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _red,
-                            ),
-                          ),
-                        ],
+                      child: SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: CustomPaint(
+                          painter: _FilmRollPainter(color: _red),
+                        ),
                       ),
                     ),
                   ),
@@ -216,4 +187,107 @@ class _SplashViewState extends State<SplashView>
       ),
     );
   }
+}
+
+// ============================================================================
+//  FILM ROLL PAINTER
+// ============================================================================
+
+class _FilmRollPainter extends CustomPainter {
+  final Color color;
+  const _FilmRollPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final cx = w / 2;
+    final cy = h / 2;
+
+    final paintWhite = Paint()
+      ..color = Colors.white.withOpacity(0.9)
+      ..style = PaintingStyle.fill;
+
+    final paintBorder = Paint()
+      ..color = Colors.white.withOpacity(0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    // ── Body roll film (persegi panjang utama) ──
+    final body = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy), width: w, height: h * 0.62),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(
+      body,
+      Paint()..color = Colors.white.withOpacity(0.12),
+    );
+    canvas.drawRRect(body, paintBorder);
+
+    // ── Strip atas & bawah ──
+    final stripPaint = Paint()
+      ..color = Colors.black.withOpacity(0.35)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, cy - h * 0.31, w, h * 0.08),
+      stripPaint,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(0, cy + h * 0.23, w, h * 0.08),
+      stripPaint,
+    );
+
+    // ── Lubang sprocket kiri & kanan ──
+    const sprocketCount = 3;
+    final sprocketR = h * 0.055;
+    final sprocketTop = cy - h * 0.22;
+    final sprocketSpacing = h * 0.18;
+
+    for (int i = 0; i < sprocketCount; i++) {
+      final y = sprocketTop + i * sprocketSpacing;
+
+      // Kiri
+      canvas.drawCircle(
+        Offset(cx - w * 0.36, y),
+        sprocketR,
+        paintWhite,
+      );
+      // Kanan
+      canvas.drawCircle(
+        Offset(cx + w * 0.36, y),
+        sprocketR,
+        paintWhite,
+      );
+    }
+
+    // ── Frame film (kotak tengah) ──
+    final frameW = w * 0.52;
+    final frameH = h * 0.38;
+    final frameRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, cy), width: frameW, height: frameH),
+      const Radius.circular(3),
+    );
+    canvas.drawRRect(
+      frameRect,
+      Paint()..color = Colors.white.withOpacity(0.08),
+    );
+    canvas.drawRRect(frameRect, paintBorder);
+
+    // ── Ikon play di dalam frame ──
+    final playPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final playSize = h * 0.13;
+    final path = Path()
+      ..moveTo(cx - playSize * 0.4, cy - playSize * 0.6)
+      ..lineTo(cx + playSize * 0.7, cy)
+      ..lineTo(cx - playSize * 0.4, cy + playSize * 0.6)
+      ..close();
+    canvas.drawPath(path, playPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
