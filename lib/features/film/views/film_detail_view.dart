@@ -358,7 +358,7 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
           ),
-          // Gradient overlay — fade to bg color at bottom
+          // Gradient overlay
           DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -373,7 +373,7 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
           ),
-          // Top fade for status bar readability
+          // Top fade for status bar
           Positioned(
             top: 0,
             left: 0,
@@ -389,7 +389,7 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
           ),
-          // Small poster thumbnail bottom-left (optional cinematic touch)
+          // Small poster thumbnail
           Positioned(
             bottom: 48,
             left: 20,
@@ -440,29 +440,35 @@ class _FloatingTopBar extends StatelessWidget {
       color: showSolid ? const Color(0xFF0A0A0F) : Colors.transparent,
       padding: EdgeInsets.only(top: topPadding, left: 12, right: 12, bottom: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Back button
+          // Back button — ukuran tetap
           _TopBarButton(icon: Icons.arrow_back_ios_new_rounded, onTap: onBack),
 
-          // Animated title
-          AnimatedOpacity(
-            opacity: showSolid ? 1 : 0,
-            duration: const Duration(milliseconds: 200),
-            child: Text(
-              film.judul,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+          const SizedBox(width: 8),
+
+          // Judul — Expanded agar menyusut jika ruang sempit
+          Expanded(
+            child: AnimatedOpacity(
+              opacity: showSolid ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: Text(
+                film.judul,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
 
-          // Right actions
+          const SizedBox(width: 8),
+
+          // Right actions — ukuran tetap, tidak ikut flex
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               GetBuilder<CrudController>(
                 builder: (c) => _TopBarButton(
@@ -581,7 +587,6 @@ class _GenreTags extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Support comma-separated genres
     final genres = kategori.split(',').map((e) => e.trim()).toList();
     return Wrap(
       spacing: 8,
